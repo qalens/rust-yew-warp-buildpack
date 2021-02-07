@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# Directories we might need
+BUILD_DIR=${1:-}
+CACHE_DIR=${2:-}
+ENV_DIR=${3:-}
+BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+
+# Set rust version
+VERSION=stable
+
+# to crash
+set -eu
+
+# Record our Rust build environment configuration in an export file
+cat <<EOF > $BP_DIR/export
+# Our rustup installation.
+export RUSTUP_HOME="$CACHE_DIR/multirust"
+# Our cargo installation.  We implicitly trust Rustup and Cargo
+# to do the right thing when new versions are released.
+export CARGO_HOME="$CACHE_DIR/cargo"
+# Include binaries installed by cargo and rustup in our path.
+PATH="\$CARGO_HOME/bin:\$PATH"
+EOF
+
+# Read our build environment back in and evaluate it so that we can use it.
+. $BP_DIR/export
+
+# Switch to our cache directory.
+mkdir -p "$CACHE_DIR"
+cd "$CACHE_DIR"
+
+# Install rustup
+echo "-----> Downloading rustup"
+curl https://sh.rustup.rs -sSf > rustup.sh
+chmod u+x rustup.sh
+echo "-----> Using rustup to install Rust channel $VERSION"
+./rustup.sh -y --default-toolchain "$VERSION"
+rm rustup.sh
+export PATH=$PATH:$HOME/.cargo/bin
+echo "-----> Checking for wasm-pack"
+if ! [ hash wasm-pack 2>/dev/null]; then
+        echo "-----> Installing wasm-pack"
+        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+fi
+echo "-----> Adding wasm tartget"
+rustup target add wasm32-unknown-unknown
+
+# Install node, npm and rollup
+echo "-----> Installing node and rollup"
+cd $BUILD_DIR
+curl https://nodejs.org/dist/v12.16.3/node-v12.16.3-linux-x64.tar.xz > node.tar.xz
+mkdir -p $HOME/node
+tar -xJvf node.tar.xz -C $HOME/node/
+rm node.tar.xz
+export PATH=$PATH:$HOME/node/node-v12.16.3-linux-x64/bin/
+npm install --global yarn
+
+# build frontend
+echo "-----> Building frontend"
+cd $BUILD_DIR/frontend
+yarn install
+yarn build
+
+# Build backend
+echo "-----> Building backend"
+mkdir -p $BUILD_DIR/target
+cd $BUILD_DIR/backend
+cargo build --release --target-dir $BUILD_DIR/target
+echo "-----> Backend built"
