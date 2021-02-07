@@ -61,10 +61,13 @@ echo "-----> Building frontend"
 cd $BUILD_DIR/frontend
 yarn install
 yarn build
-cp -R dist $BUILD_DIR/target/
 # Build backend
 echo "-----> Building backend"
 mkdir -p $BUILD_DIR/target
 cd $BUILD_DIR/backend
 cargo build --release --target-dir $BUILD_DIR/target
 echo "-----> Backend built"
+echo "-----> Copying Frontend files to backend"
+cd $BUILD_DIR/frontend
+cp -R /frontend/dist $BUILD_DIR/target/
+echo "-----> Done copying"
