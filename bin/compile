@@ -61,7 +61,7 @@ echo "-----> Building frontend"
 cd $BUILD_DIR/frontend
 yarn install
 yarn build
-
+cp -R dist $BUILD_DIR/target/
 # Build backend
 echo "-----> Building backend"
 mkdir -p $BUILD_DIR/target
