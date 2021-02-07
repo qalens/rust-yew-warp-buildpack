@@ -69,5 +69,5 @@ cargo build --release --target-dir $BUILD_DIR/target
 echo "-----> Backend built"
 echo "-----> Copying Frontend files to backend"
 cd $BUILD_DIR/frontend
-cp -R /frontend/dist $BUILD_DIR/target/
+cp -R dist $BUILD_DIR/target/
 echo "-----> Done copying"
