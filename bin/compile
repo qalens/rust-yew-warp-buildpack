@@ -44,7 +44,7 @@ if ! [ hash wasm-pack 2>/dev/null]; then
         curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 fi
 echo "-----> Adding wasm tartget"
-rustup target add wasm32-unknown-unknown -f
+rustup target add wasm32-unknown-unknown
 
 # Install node, npm and rollup
 echo "-----> Installing node and rollup"
